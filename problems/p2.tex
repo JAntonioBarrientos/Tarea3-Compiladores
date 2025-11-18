@@ -1,56 +1,10 @@
 \begin{Pro}
-Divide el siguiente programa en C++ en lexemas y genera los tokens correspondientes:
+   Define una gramática para los operadores booleanos \texttt{not}, \texttt{and} y \texttt{or}. Define funciones para parsar del árbol concreto al árbol de sintaxis abstracta (DAG). Construye los árboles concretos y abstractos para:
+\begin{enumerate}
+    \item[(a)] $(\texttt{True or } x) \texttt{ and True}$
+    \item[(b)] $(x \texttt{ or False}) \texttt{ and } (y \texttt{ and True})$
+    \item[(c)] $(\texttt{True or False}) \texttt{ and } (\texttt{not } x)$
+    \item[(d)] $\texttt{not } (\texttt{True or } x) \texttt{ and } (\texttt{False or } y) \texttt{ or } (x \texttt{ and } y)$
+\end{enumerate}
+ 
 \end{Pro}
-\begin{lstlisting}[language=C++]
-    float limitedSquare(x) float x; {
-        /* return x-squared, bit never mover than 100 */
-        return(x <= -10.0 || x>=10.0) ? 100 : x*x;
-    }
-\end{lstlisting}
-
-\begin{proof}
-    \hspace{5mm}
-
-Después del escaneo no tenemos comentarios. Ni espacios en blanco. 
-Un token es una pareja $$<tipo, valor>$$
-
-Tenemos los siguientes tipos de tokens:
-\begin{itemize}
-    \item Keywords (Kw) como \texttt{return, if, else, while, ...}
-    \item Operadores (Op) como \texttt{+, -, *, /, =, ==, <=, >=, ...}
-    \item Identificadores (Id) como \texttt{variable1, funcion2, ...}
-    \item Constantes (Const) como \texttt{3, 4.5, 'a', "hola", ...}
-    \item Símbolos de puntuación (Punct) como \texttt{(, ), {, }, ;, ...}
-\end{itemize}
-
-En este caso tenemos los siguientes tokens:
-\begin{lstlisting}
-<Kw, float> 
-<Id, limitedSquare>
-<Punct, (>
-<Id, x>
-<Punct, )>
-<Kw, float>
-<Id, x>
-<Punct, ;>
-<Punct, {>
-<Kw, return>
-<Punct, (>
-<Id, x>
-<Op, <=>
-<Const, -10.0>
-<Op, ||>
-<Id, x>
-<Op, >=>
-<Const, 10.0>
-<Punct, )>
-<Op, ?>
-<Const, 100>
-<Op, :>
-<Id, x>
-<Op, *>
-<Id, x>
-<Punct, ;>
-<Punct, }>
-\end{lstlisting}
-\end{proof}

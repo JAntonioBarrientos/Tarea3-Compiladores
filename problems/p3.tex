@@ -1,25 +1,4 @@
 \begin{Pro}
-    Define una función recursiva que compute los prefijos de una expresión regular. La
-    base de tal función recursiva es: 
-    \begin{align*}
-        prefix(\varepsilon) = \{\varepsilon\}\\
-        prefix(a) = \{a\}\\ 
-    \end{align*}
-    Completa la definición. 
+    Extiende las funciones de checado de tipo para revisar las expresiones booleanas de la gramática del ejercicio anterior. Genera el ambiente para cada expresión del ejercicio 1 y revisa la correctud del tipado en cada caso.
+
 \end{Pro}
-
-\begin{proof}
-    \hspace{5mm}
-    Para definir los prefijos de una expresión regular, podemos considerar las siguientes reglas:
-
-    Podemos definir las reglas que aplicamos para cada una de las operaciones básicas de las expresiones regulares, 
-    si tenemos que $R$ y $S$ son expresiones regulares y $a$ es un símbolo, entonces:
-    \begin{align*}
-        prefix(\epsilon) & = \{\epsilon\}\\
-        prefix(a) & = \{\epsilon, a\}\\
-        prefix(RS) & = prefix(R) \cup R \circ prefix(S)\\
-        prefix(R|S) & = prefix(R) \cup prefix(S)\\
-        prefix(R*) & = R^* \circ prefix(R)
-    \end{align*}
-
-\end{proof}

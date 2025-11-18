@@ -1,78 +1,10 @@
 \begin{Pro}
-Indica los valores asignados a $w$, $x$, $y$ y $z$. en los siguientes dos códigos estructurados por bloques.
-Muestrala tabla de símbolos en cada bloque con una implementación imperativa en cada caso:
+
+Construye el DAG para las siguientes expresiones con base en la gramática de expresiones aritméticas:
+\begin{enumerate}
+    \item[(a)] $a+b*(a+b)$
+    \item[(b)] $((x+y)-((x+y)^{*}(x,y)))+((x+y)^{*}(x-y))$
+    \item[(c)] $x^{*}(x+x)$
+\end{enumerate}
 \end{Pro}
 
-\begin{multicols}{2}
-\begin{lstlisting}[language=C++]
-int w,x,y,z;
-int i = 4; int j = 5;
-{
-    int j =7;
-    i =6; 
-    w = i+j;
-}
-x = i+j;
-{
-    int i = 8;
-    y = i+j;
-}
-z = i+j;
-\end{lstlisting}
-\begin{lstlisting}[language=C++]
-int w,x,y,z;
-int i = 3; int j = 4;
-{
-    int i = 5;
-    w = i+j;
-}
-x = i+j;
-{
-    int j = 6;
-    i = 7;
-    y = i+j;
-}
-z = i+j;
-\end{lstlisting}
-
-\end{multicols}
-\begin{proof}
-    \hspace{5mm}
-
-\begin{table}[h!]
-\centering
-\begin{tabular}{lll}
-Variable                    & Scope    & Comentario                                                 \\
-int i =4                    & Bloque 1 & Nueva variable                                             \\
-int j = 5                   & Bloque 1 & Nueva variable                                             \\
-int j = 7                   & Bloque 2 & Nueva variable, solo queda en el Bloque 2                  \\ 
-i=6                         & Bloque 2 & Afecta al Bloque 1                                         \\
-w = 6 + 7 = 13              & Bloque 2 & Afecta al Bloque 1                                         \\
-x = 6 + 5 = 11              & Bloque 1 & Afecta al Bloque 1                                         \\
-int i =8                    & Bloque 3 & Nueva variable, solo queda en el Bloque 3                  \\
-y = 13                      & Bloque 3 & Afecta al Bloque 1                                         \\
-z = 6 + 5 = 11              & Bloque 1 & El valor de i cambio, pero el de j es el del primer reglon \\
-Final                       &          & w = 13, x = 11, y = 13, z = 11, i = 6, j = 5                         
-\end{tabular}
-\caption{Tabla de símbolos y valores para el primer código estructurado por bloques}
-\end{table}
-
-\begin{table}[h!]
-\centering
-\begin{tabular}{lll}
-Variable                    & Scope    & Comentario                                                 \\
-int i =3                    & Bloque 1 & Nueva variable                                             \\
-int j =4                    & Bloque 1 & Nueva variable                                             \\
-int i = 5                   & Bloque 2 & Afecta solo al Bloque 2                                   \\
-w = 5 + 4=9                 & Bloque 2 & Asignación, afecta al bloque 1                             \\ 
-x = 3 + 4                   & Bloque 1 & Asignación, afecta al bloque 1                             \\ 
-j=6                         & Bloque 3 & Afecta al Bloque 3                                         \\
-i= 7                        & Bloque 3 & Afecta al Bloque 1                                         \\
-int i =8                    & Bloque 3 & Nueva variable, solo queda en el Bloque 3                  \\
-y = 7 + 6 = 13              & Bloque 3 & Afecta al Bloque 1                                         \\
-z = 7 + 4 = 11              & Bloque 1 & El valor de i cambio, pero el de j es el del primer reglón \\
-Final                       &          & w = 9, x = 7, y = 13, z = 11, i = 7, j = 4                            
-\end{tabular}
-\caption{Tabla de símbolos y valores para el segundo código estructurado por bloques}
-\end{table}
-\end{proof}

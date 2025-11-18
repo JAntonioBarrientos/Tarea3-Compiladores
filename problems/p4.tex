@@ -1,34 +1,7 @@
 \begin{Pro}
-    Para las siguientes expresiones regulares, da el lenguaje que definen: 
-    \begin{enumerate}
-        \item $[ab][cd\epsilon]$ 
-        \item $[a-zA-Z]^*at^*$
-        \item $ca[tr]$
-    \end{enumerate}
+    Dada la gramática del ejercicio 1, y suponiendo que el resultado tiene un tipo \texttt{bool}, define de manera explícita la función \texttt{WIDEN} que tome 1 por \texttt{True} y 0 por \texttt{False}, haciendo la conversión de \texttt{int} o \texttt{float} a \texttt{bool} y una función para conversión de tipos en las operaciones \texttt{and} y \texttt{or}. Elabora el desarrollo para las expresiones:
+\begin{itemize}
+    \item $\texttt{True or } 0$
+    \item $\texttt{True and } 1$
+\end{itemize}
 \end{Pro}
-\begin{proof}
-    \hspace{1cm}
-    \begin{enumerate}
-        \item $[ab][cd\epsilon]$ define el lenguaje $\{a,b,ac,ad,bc, bd\}$
-        \begin{align*}
-            L([ab][cd\epsilon]) &= L([ab]) \cdot L([cd\epsilon]) \\
-            &=  ( L(a) \cup L(b) )\cdot (L(c) \cup L(d) \cup L(\epsilon)) \\
-            &= \{a,b\} \cdot \{c,d,\epsilon\} \\
-            &= \{a,b,ac,ad,bc,bd \}
-        \end{align*}
-        \item $[a-zA-Z]^*at^*$ define el lenguaje de (letras)a$t^*$, es decir,todas cadenas de letras seguidas de \texttt{a} y luego de cero o más \texttt{t}. Por ejemplo: \texttt{at}, \texttt{bat}, \texttt{cat}, \texttt{a}, \texttt{rattt}, etc.
-        \begin{align*}
-            L([a-zA-Z]^*at^*) &= L([a-zA-Z]^*) \cdot L(a) \cdot L(t^*) \\
-            &= (L(a) \cup L(b) \cup ... \cup L(z) \cup L(A) \cup ... \cup L(Z))^* \cdot L(a) \cdot (L(t))^* \\
-            &= \{  a, b, ..., z, A, ..., Z\}^* \cdot \{a\} \cdot  \{t\}^* \\
-        \end{align*}
-        \item $ca[tr]$ define el lenguaje $\{cat, car\}$
-        \begin{align*}
-            L(ca[tr]) &= L(c) \cdot L(a) \cdot L([tr]) \\
-            &= L(c) \cdot L(a) \cdot (L(t) \cup L(r)) \\
-            &= \{c\} \cdot \{a\} \cdot \{t, r\} \\
-            &= \{cat, car\}
-        \end{align*}
-    \end{enumerate}
-\end{proof}
-\newpage
