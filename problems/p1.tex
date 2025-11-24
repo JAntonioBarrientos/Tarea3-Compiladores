@@ -1,10 +1,60 @@
 \begin{Pro}
-
 Construye el DAG para las siguientes expresiones con base en la gramática de expresiones aritméticas:
 \begin{enumerate}
     \item[(a)] $a+b*(a+b)$
-    \item[(b)] $((x+y)-((x+y)^{*}(x,y)))+((x+y)^{*}(x-y))$
+    \item[(b)] $((x+y)-((x+y)^{*}(x+y)))+((x+y)^{*}(x-y))$
     \item[(c)] $x^{*}(x+x)$
 \end{enumerate}
 \end{Pro}
 
+Definiremos  la gramática libre de contexto para expresiones aritméticas junto con las reglas semánticas para la construcción del Árbol de Sintaxis Abstracta (AST):
+
+
+\textbf{Nota:} 
+\begin{center}
+\renewcommand{\arraystretch}{1.5}
+\begin{tabular}{l @{\hspace{1.5cm}} l}
+    \toprule
+    \textbf{Producción} & \textbf{Reglas Semánticas (Construcción del AST)} \\
+    \midrule
+    % Nivel Expresión (Sumas y Restas)
+    $E \to E_1 + T$ & $E.node = \text{new Node}(\text{'+'}, E_1.node, T.node)$ \\
+    $E \to E_1 - T$ & $E.node = \text{new Node}(\text{'-'}, E_1.node, T.node)$ \\
+    $E \to T$       & $E.node = T.node$ \\
+    \midrule
+    % Nivel Término (Multiplicación)
+    $T \to T_1 * F$ & $T.node = \text{new Node}(\text{'*'}, T_1.node, F.node)$ \\
+    $T \to F$       & $T.node = F.node$ \\
+    \midrule
+    % Nivel Factor (Paréntesis y básicos)
+    $F \to (E)$     & $F.node = E.node$ \\
+    $F \to \textbf{id}$ & $F.node = \text{new Leaf}(\textbf{id}, \text{getname}(\textbf{id}))$ \\
+    $F \to \textbf{num}$ & $F.node = \text{new Leaf}(\textbf{num}, \text{getvalue}(\textbf{num}))$ \\
+    \bottomrule
+\end{tabular}
+\end{center}
+\footnotesize{Los subíndices (ej. $E_1, T_1$) denotan la instancia recursiva del no-terminal para diferenciarla en la regla semántica.}
+\normalsize
+
+
+
+\begin{enumerate}
+    \item[(a)] $a+b*(a+b)$
+    
+    \begin{center}
+        % Ajusta el scale o width según el tamaño de tu imagen
+        %\includegraphics[width=0.6\textwidth]{images/p1_a_dag.jpg}
+    \end{center}
+
+    \item[(b)] $((x+y)-((x+y)^{*}(x+y)))+((x+y)^{*}(x-y))$
+    
+    \begin{center}
+        %\includegraphics[width=0.9\textwidth]{images/p1_b_dag.jpg}
+    \end{center}
+
+    \item[(c)] $x^{*}(x+x)$
+    
+    \begin{center}
+        %\includegraphics[width=0.6\textwidth]{images/p1_c_dag.jpg}
+    \end{center}
+\end{enumerate}

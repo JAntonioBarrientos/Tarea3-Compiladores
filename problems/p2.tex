@@ -8,3 +8,69 @@
 \end{enumerate}
  
 \end{Pro}
+
+
+Definimos la gramática libre de contexto para expresiones booleanas. Para respetar la precedencia estándar ($\texttt{not} > \texttt{and} > \texttt{or}$), utilizamos:
+\begin{center}
+\renewcommand{\arraystretch}{1.5}
+\begin{tabular}{l @{\hspace{1.5cm}} l}
+    \toprule
+    \textbf{Producción} & \textbf{Reglas Semánticas (Construcción del DAG)} \\
+    \midrule
+    % Nivel Expresión (OR - Menor precedencia)
+    $B \to B_1 \texttt{ or } T$ & $B.node = \text{new Node}(\texttt{'or'}, B_1.node, T.node)$ \\
+    $B \to T$       & $B.node = T.node$ \\
+    \midrule
+    % Nivel Término (AND - Precedencia media)
+    $T \to T_1 \texttt{ and } F$ & $T.node = \text{new Node}(\texttt{'and'}, T_1.node, F.node)$ \\
+    $T \to F$       & $T.node = F.node$ \\
+    \midrule
+    % Nivel Factor (NOT, Paréntesis y Literales - Mayor precedencia)
+    $F \to \texttt{not } F_1$     & $F.node = \text{new Node}(\texttt{'not'}, F_1.node, \text{null})$ \\
+    $F \to (B)$     & $F.node = B.node$ \\
+    $F \to \textbf{true}$ & $F.node = \text{new Leaf}(\textbf{true}, \text{val}(\text{true}))$ \\
+    $F \to \textbf{false}$ & $F.node = \text{new Leaf}(\textbf{false}, \text{val}(\text{false}))$ \\
+    $F \to \textbf{id}$ & $F.node = \text{new Leaf}(\textbf{id}, \text{getname}(\textbf{id}))$ \\
+    \bottomrule
+\end{tabular}
+\end{center}
+\footnotesize{Nota: El operador unario \texttt{not} se aplica sobre el Factor ($F$). Los subíndices (ej. $B_1$) denotan la instancia recursiva del lado derecho.}
+\normalsize
+
+\begin{enumerate}
+    \item[(a)] $(\texttt{True or } x) \texttt{ and True}$
+    
+    \begin{center}
+        % Espacio para Árbol Concreto
+        %\includegraphics[width=0.45\textwidth]{images/p2a_concreto.png}
+        \hfill
+        % Espacio para DAG/AST
+        %\includegraphics[width=0.45\textwidth]{images/p2a_dag.png}
+        
+        \footnotesize{\textit{Izquierda: Árbol Concreto. Derecha: DAG.}}
+    \end{center}
+
+    \item[(b)] $(x \texttt{ or False}) \texttt{ and } (y \texttt{ and True})$
+    
+    \begin{center}
+        %\includegraphics[width=0.45\textwidth]{images/p2b_concreto.png}
+        \hfill
+        %\includegraphics[width=0.45\textwidth]{images/p2b_dag.png}
+    \end{center}
+
+    \item[(c)] $(\texttt{True or False}) \texttt{ and } (\texttt{not } x)$
+    
+    \begin{center}
+        %\includegraphics[width=0.45\textwidth]{images/p2c_concreto.png}
+        \hfill
+        %\includegraphics[width=0.45\textwidth]{images/p2c_dag.png}
+    \end{center}
+
+    \item[(d)] $\texttt{not } (\texttt{True or } x) \texttt{ and } (\texttt{False or } y) \texttt{ or } (x \texttt{ and } y)$
+    
+    \begin{center}
+        
+        %\includegraphics[width=0.7\textwidth]{images/p2d_concreto.png} \\[1em]
+        %\includegraphics[width=0.7\textwidth]{images/p2d_dag.png}
+    \end{center}
+\end{enumerate}
