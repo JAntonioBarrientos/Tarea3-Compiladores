@@ -10,4 +10,69 @@ De las siguientes expresiones, realiza sus cuádruples, triples y triples indire
 \end{Pro}
 
 
+\begin{enumerate}
+    \item[(a)] $a+(b+c)$
+
+El orden de evaluación es que primero se debe calcular la subexpresión dentro del paréntesis $(b+c)$ y luego sumar ese resultado con $a$.
+
+\subsection*{1. Cuádruples}
+En los cuádruples utilizamos variables temporales explícitas ($t_1, t_2$) para almacenar los resultados intermedios.
+
+\begin{center}
+\begin{tabular}{|c|c|c|c|c|}
+    \hline
+    \textbf{Instrucción} & \textbf{Op} & \textbf{Arg1} & \textbf{Arg2} & \textbf{Resultado} \\
+    \hline
+    (1) & $+$ & $b$ & $c$ & $t_1$ \\
+    \hline
+    (2) & $+$ & $a$ & $t_1$ & $t_2$ \\
+    \hline
+\end{tabular}
+\end{center}
+\textit{Interpretación: Primero $t_1 = b + c$, luego $t_2 = a + t_1$.}
+
+\subsection*{2. Triples}
+En los triples no definimos $t_n$. Referenciamos el resultado de la suma anterior usando su índice (posición) entre paréntesis, en este caso $(0)$ refiere al resultado de la primera operación.
+
+\begin{center}
+\begin{tabular}{|c|c|c|c|}
+    \hline
+    \textbf{Índice} & \textbf{Op} & \textbf{Arg1} & \textbf{Arg2} \\
+    \hline
+    (0) & $+$ & $b$ & $c$ \\
+    \hline
+    (1) & $+$ & $a$ & $(0)$ \\
+    \hline
+\end{tabular}
+\end{center}
+
+\subsection*{3. Triples Indirectos}
+Se utilizan dos tablas. La tabla de instrucciones contiene apuntadores a la tabla de triples.
+
+\textbf{Tabla de Instrucciones (Apuntadores)}
+\begin{center}
+\begin{tabular}{|c|c|}
+    \hline
+    \textbf{Posición} & \textbf{Apunta a Triple} \\
+    \hline
+    35 & (0) \\
+    \hline
+    36 & (1) \\
+    \hline
+\end{tabular}
+\end{center}
+
+\textbf{Tabla de Triples}
+\begin{center}
+\begin{tabular}{|c|c|c|c|}
+    \hline
+    \textbf{ID} & \textbf{Op} & \textbf{Arg1} & \textbf{Arg2} \\
+    \hline
+    0 & $+$ & $b$ & $c$ \\
+    \hline
+    1 & $+$ & $a$ & $(0)$ \\
+    \hline
+\end{tabular}
+\end{center}
+\end{enumerate}    
 

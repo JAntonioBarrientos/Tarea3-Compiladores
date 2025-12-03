@@ -1,7 +1,89 @@
 \begin{Pro}
-    Dada la gramática del ejercicio 1, y suponiendo que el resultado tiene un tipo \texttt{bool}, define de manera explícita la función \texttt{WIDEN} que tome 1 por \texttt{True} y 0 por \texttt{False}, haciendo la conversión de \texttt{int} o \texttt{float} a \texttt{bool} y una función para conversión de tipos en las operaciones \texttt{and} y \texttt{or}. Elabora el desarrollo para las expresiones:
+    Dada la gramática del ejercicio anterior, y suponiendo que el resultado tiene un tipo \texttt{bool}, define de manera explícita la función \texttt{WIDEN} que tome 1 por \texttt{True} y 0 por \texttt{False}, haciendo la conversión de \texttt{int} o \texttt{float} a \texttt{bool} y una función para conversión de tipos en las operaciones \texttt{and} y \texttt{or}. Elabora el desarrollo para las expresiones:
 \begin{itemize}
     \item $\texttt{True or } 0$
     \item $\texttt{True and } 1$
 \end{itemize}
 \end{Pro}
+
+
+Basándonos en la estructura de la función \texttt{WIDEN} presentada en las notas del curso definimos widen:
+
+% Algoritmo WIDEN
+\begin{algorithm}[H]
+\caption{Función WIDEN para conversión a Booleanos}
+\begin{algorithmic}[1] % El [1] activa la numeración de líneas
+    \Function{Widen}{Addr $a$, Type $t$, Type $w$}
+        \If{$t == w$} \Comment{Si los tipos coinciden, no se requiere conversión}
+            \State \Return $a$
+        \ElsIf{$w == \texttt{bool}$}
+            \If{$t == \texttt{int}$ \textbf{or} $t == \texttt{float}$}
+                \If{$\text{val}(a) \neq 0$} \Comment{Si es 1 o cualquier valor distinto de 0}
+                    \State \Return \textbf{True}
+                \ElsIf{$\text{val}(a) == 0$}
+                    \State \Return \textbf{False}
+                \Else
+                    \State \textbf{error}("Valor no booleano válido")
+                \EndIf
+            \Else
+                \State \textbf{error}("Tipo incompatible")
+            \EndIf
+        \Else
+            \State \textbf{error}()
+        \EndIf
+    \EndFunction
+\end{algorithmic}
+\end{algorithm}
+
+Extensión de la regla semántica para operaciones binarias (\texttt{and}, \texttt{or}) permitiendo conversión implícita:
+
+% Algoritmo CheckBoolOp
+\begin{algorithm}[H]
+\caption{Checado con Conversión Implícita}
+\begin{algorithmic}[1]
+    \Function{CheckBoolOp}{Op $op$, Node $E_1$, Node $E_2$}
+        \State $t_1 \gets E_1.type$
+        \State $t_2 \gets E_2.type$
+        \State $t_{max} \gets \texttt{bool}$ \Comment{Forzamos el tipo destino a bool}
+        
+        \If{($t_1$ convertible a bool) \textbf{and} ($t_2$ convertible a bool)}
+            \State $addr_1 \gets \Call{Widen}{E_1.addr, t_1, t_{max}}$
+            \State $addr_2 \gets \Call{Widen}{E_2.addr, t_2, t_{max}}$
+            \State \Return \text{newNode}($op, addr_1, addr_2$) de tipo \texttt{bool}
+        \Else
+            \State \textbf{error}()
+        \EndIf
+    \EndFunction
+\end{algorithmic}
+\end{algorithm}
+
+\subsection*{2. Desarrollo de las Expresiones}
+
+\begin{itemize}
+    \item \textbf{Expresión 1:} $\texttt{True or } 0$
+    
+    \begin{enumerate}
+        \item Se evalúa $E_1$ (\textbf{True}): $E_1.type = \texttt{bool}$, $E_1.val = \textbf{True}$.
+        \item Se evalúa $E_2$ ($0$): $E_2.type = \texttt{int}$, $E_2.val = 0$.
+        \item Se aplica \textsc{CheckBoolOp}(\texttt{or}, $E_1, E_2$):
+        \begin{itemize}
+            \item Objetivo $t_{max} = \texttt{bool}$.
+            \item \textbf{Conversión 1:} $\Call{Widen}{\textbf{True}, \texttt{bool}, \texttt{bool}} \to$ Retorna \textbf{True}.
+            \item \textbf{Conversión 2:} $\Call{Widen}{0, \texttt{int}, \texttt{bool}}$. Como $t \neq w$, verifica el valor. Dado que es $0$, retorna \textbf{False}.
+            \item \textbf{Op. Final:} $\textbf{True} \texttt{ or } \textbf{False} \to$ \textbf{True}.
+        \end{itemize}
+    \end{enumerate}
+
+    \item \textbf{Expresión 2:} $\texttt{True and } 1$
+    
+    \begin{enumerate}
+        \item Se evalúa $E_1$ (\textbf{True}): $E_1.type = \texttt{bool}$.
+        \item Se evalúa $E_2$ ($1$): $E_2.type = \texttt{int}$, $E_2.val = 1$.
+        \item Se aplica \textsc{CheckBoolOp}(\texttt{and}, $E_1, E_2$):
+        \begin{itemize}
+            \item \textbf{Conversión 1:} $\Call{Widen}{\textbf{True}, \texttt{bool}, \texttt{bool}} \to$ Retorna \textbf{True}.
+            \item \textbf{Conversión 2:} $\Call{Widen}{1, \texttt{int}, \texttt{bool}}$. Como es $1$, retorna \textbf{True}.
+            \item \textbf{Op. Final:} $\textbf{True} \texttt{ and } \textbf{True} \to$ \textbf{True}.
+        \end{itemize}
+    \end{enumerate}
+\end{itemize}

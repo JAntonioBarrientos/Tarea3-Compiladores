@@ -1,4 +1,198 @@
 \begin{Pro}
-    Extiende las funciones de checado de tipo para revisar las expresiones booleanas de la gramática del ejercicio anterior. Genera el ambiente para cada expresión del ejercicio 1 y revisa la correctud del tipado en cada caso.
+    Extiende las funciones de checado de tipo para revisar las expresiones booleanas de la gramática del ejercicio anterior. Genera el ambiente para cada expresión del ejercicio 2 y revisa la correctud del tipado en cada caso.
 
 \end{Pro}
+
+
+Para validar las expresiones booleanas, extendemos la función $Check_E$ presentada en el curso. Esta función opera mediante \textbf{síntesis}, construyendo el tipo de la expresión a partir de sus subexpresiones (de las hojas a la raíz).
+
+Se asume una tabla de símbolos de variables ($vtable$) y una de funciones ($ftable$).
+
+\begin{algorithm}[H]
+\textbf{CheckE}(E, vtable, ftable) = \textbf{case} E \textbf{of} \\
+\quad \textbf{-- Literales y Variables} \\
+\quad \textbf{True}: \textbf{return} bool \\
+\quad \textbf{False}: \textbf{return} bool \\
+\quad \textbf{id}: \\
+\qquad $t$ = \text{lookup}(vtable, \text{getname}(id)); \\
+\qquad \textbf{if} $t$ == \text{unbound} \textbf{ then } \text{error()} \textbf{ else } $t$ \\
+\\
+\quad \textbf{-- Operador Unario (NOT)} \\
+\quad \textbf{not } $E_1$: \\   % <--- AQUÍ ESTABA EL ERROR (Faltaban los $)
+\qquad $t_1$ = \text{CheckE}($E_1$, vtable, ftable); \\
+\qquad \textbf{if} $t_1$ == \text{bool} \textbf{ then } \text{bool} \textbf{ else } \text{error()} \\
+\\
+\quad \textbf{-- Operadores Binarios (AND, OR)} \\
+\quad $E_1$ \texttt{ op } $E_2$ \quad (\text{donde } $op \in \{\texttt{and, or}\}$): \\ % <--- \in TAMBIÉN REQUIERE $
+\qquad $t_1$ = \text{CheckE}($E_1$, vtable, ftable); \\
+\qquad $t_2$ = \text{CheckE}($E_2$, vtable, ftable); \\
+\qquad \textbf{if} $t_1$ == \text{bool} \textbf{ and } $t_2$ == \text{bool} \textbf{ then } \text{bool} \\
+\qquad \textbf{else } \text{error()}
+\end{algorithm}
+
+
+\begin{enumerate}
+    \item[(a)] \textbf{Expresión:} $(\texttt{True or } x) \texttt{ and True}$
+    
+    \textbf{1. Generación del Ambiente ($vtable$):} \\
+    Para que la expresión sea válida, la variable $x$ debe existir en el contexto. Dado que se opera con operadores lógicos, inferimos que su tipo debe ser booleano.
+    \[
+    vtable = \{ x : \texttt{bool} \}
+    \]
+    
+    \textbf{2. Checado de Tipos (Paso a Paso):} \\
+    Aplicamos las reglas de síntesis de abajo hacia arriba:
+    
+    \begin{itemize}
+        \item \textbf{Evaluación de $x$:}
+        \begin{itemize}
+            \item Se llama a $lookup(vtable, x)$.
+            \item Como $x$ está en la $vtable$, retorna \texttt{bool}.
+        \end{itemize}
+        
+        \item \textbf{Evaluación de $(\texttt{True or } x)$:}
+        \begin{itemize}
+            \item $E_1$ (\texttt{True}) tiene tipo \texttt{bool}.
+            \item $E_2$ ($x$) tiene tipo \texttt{bool}.
+            \item La regla para \texttt{or} verifica que ambos sean \texttt{bool}.
+            \item \textbf{Resultado parcial:} \texttt{bool}.
+        \end{itemize}
+        
+        \item \textbf{Evaluación completa $((\dots) \texttt{ and True})$:}
+        \begin{itemize}
+            \item $E_1$ (resultado del paso anterior) tiene tipo \texttt{bool}.
+            \item $E_2$ (\texttt{True}) tiene tipo \texttt{bool}.
+            \item La regla para \texttt{and} verifica que ambos sean \texttt{bool}.
+            \item \textbf{Resultado Final:} \texttt{bool}.
+        \end{itemize}
+    \end{itemize}
+    
+    $\therefore$ La expresión es \textbf{correcta} y tiene tipo \texttt{bool}.
+
+
+    \item[(b)] \textbf{Expresión:} $(x \texttt{ or False}) \texttt{ and } (y \texttt{ and True})$
+
+\textbf{1. Generación del Ambiente ($vtable$):} \\
+Identificamos las variables $x$ e $y$ en la expresión, pues de lo contrario el checado de tipos fallaría. Ambas deben ser de tipo booleano para cumplir con las reglas de los operadores lógicos.
+\[
+vtable = \{ x : \texttt{bool}, \quad y : \texttt{bool} \}
+\]
+
+\textbf{2. Checado de Tipos (Síntesis):} \\
+Aplicamos la función \texttt{CheckE} recursivamente.
+\begin{itemize}
+    \item \textbf{Subexpresión Izquierda} $(x \texttt{ or False})$:
+    \begin{itemize}
+        \item Evaluamos $x$: $\text{lookup}(vtable, x)$ devuelve \texttt{bool}.
+        \item Evaluamos \texttt{False}: es un literal de tipo \texttt{bool}.
+        \item Operador \texttt{or}: Verifica que ambos operandos sean \texttt{bool}.
+        \item \textbf{Tipo resultante ($t_1$):} \texttt{bool}.
+    \end{itemize}
+
+    \item \textbf{Subexpresión Derecha} $(y \texttt{ and True})$:
+    \begin{itemize}
+        \item Evaluamos $y$: $\text{lookup}(vtable, y)$ devuelve \texttt{bool}.
+        \item Evaluamos \texttt{True}: es un literal de tipo \texttt{bool}.
+        \item Operador \texttt{and}: Verifica que ambos operandos sean \texttt{bool}.
+        \item \textbf{Tipo resultante ($t_2$):} \texttt{bool}.
+    \end{itemize}
+
+    \item \textbf{Expresión Raíz} $(\dots) \texttt{ and } (\dots)$:
+    \begin{itemize}
+        \item Toma $t_1$ (resultado izquierdo) y $t_2$ (resultado derecho).
+        \item Ambos son \texttt{bool}, por lo tanto cumple la regla de tipado para \texttt{and}.
+        \item \textbf{Resultado Final:} \texttt{bool}.
+    \end{itemize}
+\end{itemize}
+
+$\therefore$ La expresión está correctamente tipada bajo el ambiente dado.
+
+
+\item[(c)] \textbf{Expresión:} $(\texttt{True or False}) \texttt{ and } (\texttt{not } x)$
+
+\textbf{1. Generación del Ambiente ($vtable$):} \\
+La variable $x$ debe estar definida en el contexto para que la expresión sea válida. Dado que se utiliza con el operador \texttt{not}, su tipo debe ser booleano.
+\[
+vtable = \{ x : \texttt{bool} \}
+\]
+
+\textbf{2. Checado de Tipos (Síntesis):} \\
+Evaluamos las subexpresiones de abajo hacia arriba:
+
+\begin{itemize}
+    \item \textbf{Subexpresión Izquierda} $(\texttt{True or False})$:
+    \begin{itemize}
+        \item Ambos operandos son literales \texttt{bool}.
+        \item El operador \texttt{or} recibe dos booleanos, lo cual es válido.
+        \item \textbf{Tipo resultante ($t_1$):} \texttt{bool}.
+    \end{itemize}
+
+    \item \textbf{Subexpresión Derecha} $(\texttt{not } x)$:
+    \begin{itemize}
+        \item Se realiza la búsqueda: $\text{lookup}(vtable, x)$. Dado el ambiente definido, retorna \texttt{bool}.
+        \item El operador \texttt{not} verifica que su operando sea \texttt{bool}. Es correcto.
+        \item \textbf{Tipo resultante ($t_2$):} \texttt{bool}.
+    \end{itemize}
+
+    \item \textbf{Expresión Raíz} $(\dots) \texttt{ and } (\dots)$:
+    \begin{itemize}
+        \item Evaluamos $t_1 \texttt{ and } t_2$.
+        \item Como $t_1 = \texttt{bool}$ y $t_2 = \texttt{bool}$, la operación es válida.
+        \item \textbf{Resultado Final:} \texttt{bool}.
+    \end{itemize}
+\end{itemize}
+
+$\therefore$ La expresión esta bien tipada y su tipo es \texttt{bool}.
+
+
+\item[(d)] \textbf{Expresión:} $\texttt{not } (\texttt{True or } x) \texttt{ and } (\texttt{False or } y) \texttt{ or } (x \texttt{ and } y)$
+
+\textbf{Análisis de Precedencia:}
+Según la gramática definida, la estructura jerárquica es:
+\[
+\Big( \big( \texttt{not } (\texttt{True or } x) \big) \texttt{ and } (\texttt{False or } y) \Big) \texttt{ or } (x \texttt{ and } y)
+\]
+
+\textbf{1. Generación del Ambiente ($vtable$):} \\
+La expresión utiliza las variables $x$ e $y$. Para que la síntesis de tipos sea exitosa, ambas deben estar registradas en la tabla de símbolos como booleanas.
+\[
+vtable = \{ x : \texttt{bool}, \quad y : \texttt{bool} \}
+\]
+
+\textbf{2. Checado de Tipos (Síntesis):} \\
+Procedemos desde las hojas hacia la raíz:
+
+\begin{itemize}
+    \item \textbf{Paso 1: Subexpresiones entre paréntesis}
+    \begin{itemize}
+        \item $A = (\texttt{True or } x)$: $\texttt{True}$ es bool, $\text{lookup}(x)$ es bool $\rightarrow$ Resultado: \texttt{bool}.
+        \item $B = (\texttt{False or } y)$: $\texttt{False}$ es bool, $\text{lookup}(y)$ es bool $\rightarrow$ Resultado: \texttt{bool}.
+        \item $C = (x \texttt{ and } y)$: Ambas variables son bool $\rightarrow$ Resultado: \texttt{bool}.
+    \end{itemize}
+
+    \item \textbf{Paso 2: NOT}
+    \begin{itemize}
+        \item Evaluamos $\texttt{not } A$.
+        \item Como $A$ es de tipo \texttt{bool}, la operación es válida.
+        \item \textbf{Resultado ($t_{not}$):} \texttt{bool}.
+    \end{itemize}
+
+    \item \textbf{Paso 3: Conjunción (AND)}
+    \begin{itemize}
+        \item Evaluamos $t_{not} \texttt{ and } B$.
+        \item Izquierda (\texttt{bool}) y Derecha (\texttt{bool}) coinciden.
+        \item \textbf{Resultado ($t_{left}$):} \texttt{bool}.
+    \end{itemize}
+
+    \item \textbf{Paso 4: Raíz (OR)}
+    \begin{itemize}
+        \item Evaluamos $t_{left} \texttt{ or } C$.
+        \item $t_{left}$ proviene del paso 3 (\texttt{bool}).
+        \item $C$ proviene del paso 1 (\texttt{bool}).
+        \item Ambos son \texttt{bool}, por lo tanto se cumple la regla de tipado.
+        \item \textbf{Resultado Final:} \texttt{bool}.
+    \end{itemize}
+\end{itemize}
+
+$\therefore$ La expresión es semánticamente correcta y tiene tipo \textbf{bool}.
+\end{enumerate}
