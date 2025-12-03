@@ -28,8 +28,8 @@ Definimos la gramática libre de contexto para expresiones booleanas. Para respe
     % Nivel Factor (NOT, Paréntesis y Literales - Mayor precedencia)
     $F \to \texttt{not } F_1$     & $F.node = \text{new Node}(\texttt{'not'}, F_1.node, \text{null})$ \\
     $F \to (B)$     & $F.node = B.node$ \\
-    $F \to \textbf{true}$ & $F.node = \text{new Leaf}(\textbf{true}, \text{val}(\text{true}))$ \\
-    $F \to \textbf{false}$ & $F.node = \text{new Leaf}(\textbf{false}, \text{val}(\text{false}))$ \\
+    $F \to \textbf{True}$ & $F.node = \text{new Leaf}(\textbf{True}, \text{val}(\text{True}))$ \\
+    $F \to \textbf{False}$ & $F.node = \text{new Leaf}(\textbf{False}, \text{val}(\text{False}))$ \\
     $F \to \textbf{id}$ & $F.node = \text{new Leaf}(\textbf{id}, \text{getname}(\textbf{id}))$ \\
     \bottomrule
 \end{tabular}
@@ -37,40 +37,48 @@ Definimos la gramática libre de contexto para expresiones booleanas. Para respe
 \footnotesize{Nota: El operador unario \texttt{not} se aplica sobre el Factor ($F$). Los subíndices (ej. $B_1$) denotan la instancia recursiva del lado derecho.}
 \normalsize
 
+
+
+Para la construcción del DAG, se asume que las funciones constructoras (new Node, new Leaf) verifican primero si ya existe un nodo idéntico en la gráfica antes de crear uno nuevo (Value-Number Method).
+
+Primero mostraremos los árboles abstractos y luego los árboles concretos para cada expresión
+
 \begin{enumerate}
     \item[(a)] $(\texttt{True or } x) \texttt{ and True}$
     
     \begin{center}
         % Espacio para Árbol Concreto
-        %\includegraphics[width=0.45\textwidth]{images/p2a_concreto.png}
-        \hfill
-        % Espacio para DAG/AST
-        %\includegraphics[width=0.45\textwidth]{images/p2a_dag.png}
+        \includegraphics[width=0.5\textwidth]{images/p2/p2a_asa.jpg}
         
-        \footnotesize{\textit{Izquierda: Árbol Concreto. Derecha: DAG.}}
+    
+        \includegraphics[width=0.5\textwidth]{images/p2/p2a_concreto.jpg}
+
     \end{center}
 
     \item[(b)] $(x \texttt{ or False}) \texttt{ and } (y \texttt{ and True})$
     
     \begin{center}
-        %\includegraphics[width=0.45\textwidth]{images/p2b_concreto.png}
+        \includegraphics[width=0.5\textwidth]{images/p2/p2b_asa.jpg}
         \hfill
-        %\includegraphics[width=0.45\textwidth]{images/p2b_dag.png}
+
+        \includegraphics[width=0.5\textwidth]{images/p2/p2b_concreto.jpg}
     \end{center}
 
     \item[(c)] $(\texttt{True or False}) \texttt{ and } (\texttt{not } x)$
     
     \begin{center}
-        %\includegraphics[width=0.45\textwidth]{images/p2c_concreto.png}
+        \includegraphics[width=0.5\textwidth]{images/p2/p2c_asa.jpg}
         \hfill
-        %\includegraphics[width=0.45\textwidth]{images/p2c_dag.png}
+        \includegraphics[width=0.5\textwidth]{images/p2/p2c_concreto.jpg}
     \end{center}
 
     \item[(d)] $\texttt{not } (\texttt{True or } x) \texttt{ and } (\texttt{False or } y) \texttt{ or } (x \texttt{ and } y)$
     
     \begin{center}
         
-        %\includegraphics[width=0.7\textwidth]{images/p2d_concreto.png} \\[1em]
-        %\includegraphics[width=0.7\textwidth]{images/p2d_dag.png}
+        \includegraphics[width=0.7\textwidth]{images/p2/p2d_asa.jpg} \\[1em]
+
+
+        \includegraphics[width=0.8\textwidth]{images/p2/p2d_concreto.jpg}
     \end{center}
 \end{enumerate}

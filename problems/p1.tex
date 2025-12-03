@@ -36,6 +36,8 @@ Definiremos  la gramática libre de contexto para expresiones aritméticas junto
 \footnotesize{Los subíndices (ej. $E_1, T_1$) denotan la instancia recursiva del no-terminal para diferenciarla en la regla semántica.}
 \normalsize
 
+Para construir el DAG, seguimos un proceso \textit{bottom-up}. Identificamos las hojas (variables/números) únicas y reutilizamos nodos intermedios si la operación y sus operandos son idénticos a uno existente.
+
 
 
 \begin{enumerate}
@@ -43,18 +45,116 @@ Definiremos  la gramática libre de contexto para expresiones aritméticas junto
     
     \begin{center}
         % Ajusta el scale o width según el tamaño de tu imagen
-        %\includegraphics[width=0.6\textwidth]{images/p1_a_dag.jpg}
+        \includegraphics[width=0.6\textwidth]{images/p1/p1_a_asa.jpg}
+        %caption
+        \captionof{figure}{ASA para la expresión $a+b*(a+b)$.}
+        \label{fig:p1_a_asa}
     \end{center}
+
+       \textbf{Análisis:}
+    \begin{itemize}
+        \item Las hojas \textbf{id:a} y \textbf{id:b} son únicas; se crean una sola vez.
+        \item La subexpresión $(a+b)$ se calcula primero.
+        \item El nodo final suma $a$ con el resultado de la multiplicación.
+    \end{itemize}
+
+    \begin{center}
+    \begin{tabular}{c c c c l}
+        \toprule
+        \textbf{ID} & \textbf{Op} & \textbf{Izq} & \textbf{Der} & \textbf{Subexpresión} \\
+        \midrule
+        1 & id & - & - & $a$ \\
+        2 & id & - & - & $b$ \\
+        3 & + & 1 & 2 & $a+b$ \\
+        4 & * & 2 & 3 & $b * (a+b)$ \\
+        5 & + & 1 & 4 & $a + (b*(a+b))$ \\
+        \bottomrule
+    \end{tabular}
+    \end{center}
+
+        \begin{center}
+        % Ajusta el scale o width según el tamaño de tu imagen
+        \includegraphics[width=0.6\textwidth]{images/p1/p1_a_dag.jpg}
+        %caption
+        \captionof{figure}{DAG para la expresión $a+b*(a+b)$.}
+        \label{fig:p1_a_dag}
+    \end{center}
+
 
     \item[(b)] $((x+y)-((x+y)^{*}(x+y)))+((x+y)^{*}(x-y))$
     
     \begin{center}
-        %\includegraphics[width=0.9\textwidth]{images/p1_b_dag.jpg}
+        \includegraphics[width=0.9\textwidth]{images/p1/p1_b_asa.jpg}
+        %caption
+        \captionof{figure}{ASA para la expresión $((x+y)-((x+y)^{*}(x+y)))+((x+y)^{*}(x-y))$.}
+        \label{fig:p1_b_asa}
+    \end{center}
+
+ \textbf{Análisis:}
+    \begin{itemize}
+        \item Identificamos la subexpresión común $S_1 = (x+y)$, la cual se repite 4 veces pero solo genera \textbf{1 nodo} en el DAG.
+        \item El nodo $S_1$ es reutilizado como operando para la resta izquierda, la multiplicación central y la multiplicación derecha.
+    \end{itemize}
+
+    \begin{center}
+    \begin{tabular}{c c c c l}
+        \toprule
+        \textbf{ID} & \textbf{Op} & \textbf{Izq} & \textbf{Der} & \textbf{Subexpresión / Nota} \\
+        \midrule
+        1 & id & - & - & $x$ \\
+        2 & id & - & - & $y$ \\
+        3 & + & 1 & 2 & $(x+y)$ \textit{(Se reutiliza 4 veces)} \\
+        4 & * & 3 & 3 & $(x+y)*(x+y)$ \\
+        5 & - & 3 & 4 & Parte Izq: $(x+y) - (\text{nodo } 4)$ \\
+        6 & - & 1 & 2 & $(x-y)$ \\
+        7 & * & 3 & 6 & Parte Der: $(x+y) * (x-y)$ \\
+        8 & + & 5 & 7 & \textbf{Raíz} \\
+        \bottomrule
+    \end{tabular}
+    \end{center}
+
+    \begin{center}
+        \includegraphics[width=0.9\textwidth]{images/p1/p1_b_dag.jpg}
+        %caption
+        \captionof{figure}{DAG para la expresión $((x+y)-((x+y)^{*}(x+y)))+((x+y)^{*}(x-y))$.}
+        \label{fig:p1_b_dag}
     \end{center}
 
     \item[(c)] $x^{*}(x+x)$
     
+
     \begin{center}
-        %\includegraphics[width=0.6\textwidth]{images/p1_c_dag.jpg}
+        \includegraphics[width=0.6\textwidth]{images/p1/p1_c_asa.jpg}
+        %caption
+        \captionof{figure}{ASA para la expresión $x^{*}(x+x)$.}
+        \label{fig:p1_c_asa}
+    \end{center}
+
+
+     \textbf{Análisis:}
+    \begin{itemize}
+        \item Solo existe una variable $x$. Se crea un único nodo hoja para ella.
+        \item El nodo hoja $x$ tendrá 3 padres en el grafo (dos conexiones hacia el $+$ y una hacia el $*$).
+    \end{itemize}
+
+    \begin{center}
+    \begin{tabular}{c c c c l}
+        \toprule
+        \textbf{ID} & \textbf{Op} & \textbf{Izq} & \textbf{Der} & \textbf{Subexpresión} \\
+        \midrule
+        1 & id & - & - & $x$ \\
+        2 & + & 1 & 1 & $x+x$ \\
+        3 & * & 1 & 2 & $x * (x+x)$ \\
+        \bottomrule
+    \end{tabular}
+    \end{center}
+
+    \begin{center}
+        \includegraphics[width=0.6\textwidth]{images/p1/p1_c_dag.jpg}
+        %caption
+        \captionof{figure}{DAG para la expresión $x^{*}(x+x)$.}
+        \label{fig:p1_c_dag}
     \end{center}
 \end{enumerate}
+
+
