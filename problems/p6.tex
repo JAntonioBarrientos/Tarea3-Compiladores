@@ -4,10 +4,141 @@ $$ S := \texttt{repeat } S \texttt{ until } Cond $$
 Y propón una función para creación de árbol de sintaxis abstracta y una traducción a código de tres direcciones para esta producción. Traduce entonces el siguiente código:
 
 \begin{verbatim}
-x = 0
+x = 0;
 repeat
-    y = 2x + 1
-    x = x + y
-until x = 100
+    y = 2*x + 1;
+    x = x + y;
+until x == 100;
 \end{verbatim}  
 \end{Pro}
+
+
+A continuación se presenta la gramática libre de contexto extendida para soportar sentencias ($S$), expresiones aritméticas ($E$) y condiciones booleanas ($C$), basada en las notas del curso.
+
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{l @{\hspace{1cm}} l}
+    \toprule
+    \textbf{Producción (Sintaxis)} & \textbf{Reglas Semánticas (Construcción del AST)} \\
+    \midrule
+    
+    \multicolumn{2}{c}{\textbf{1. Sentencias ($S$)}} \\
+    $S \to S_1 \texttt{ ; } S_2$ & $S.node = \text{new Node}(\texttt{'seq'}, S_1.node, S_2.node)$ \\
+    $S \to \textbf{id} = E$ & $S.node = \text{new Node}(\texttt{'assign'}, \text{new Leaf}(\textbf{id}, \text{entry}), E.node)$ \\
+    $S \to \texttt{repeat } S_1 \texttt{ until } C$ & $S.node = \text{new Node}(\texttt{'repeat'}, S_1.node, C.node)$ \\
+    
+    \midrule
+    \multicolumn{2}{c}{\textbf{2. Expresiones ($E$)}} \\
+    $E \to E_1 \texttt{ op } E_2$ & $E.node = \text{new Node}(\text{op}, E_1.node, E_2.node)$ \\
+    & \footnotesize{\textit{(donde op $\in \{+, -, *, /\}$)}} \\
+    $E \to \texttt{num}$ & $E.node = \text{new Leaf}(\texttt{num}, \text{val})$ \\
+    $E \to \textbf{id}$ & $E.node = \text{new Leaf}(\textbf{id}, \text{entry})$ \\
+    
+    \midrule
+    \multicolumn{2}{c}{\textbf{3. Condiciones ($C$)}} \\
+    $C \to E_1 \text{ relop } E_2$ & $C.node = \text{new Node}(\text{relop}, E_1.node, E_2.node)$ \\
+    & \footnotesize{\textit{(donde relop $\in \{=, \neq, <, >, \le, \ge\}$)}} \\
+    $C \to \texttt{true}$ & $C.node = \text{new Leaf}(\texttt{true})$ \\
+    $C \to \texttt{false}$ & $C.node = \text{new Leaf}(\texttt{false})$ \\
+    
+    \bottomrule
+\end{tabular}
+\end{center}
+
+Obtenemos el siguiente árbol de sintaxis abstracta (AST) para el código dado:
+
+
+
+\begin{figure*}[h]
+    \centering
+    \includegraphics[width=0.9\textwidth]{images/p6asa.jpg}
+    \caption{DAG para el código fuente dado.}
+    \label{fig:p6_dag}
+\end{figure*}
+
+
+
+Para la producción $S \to \texttt{repeat } S_1 \texttt{ until } C$, proponemos la siguiente regla semántica que genera código lineal. Se utiliza la función \texttt{newlabel()} para crear etiquetas de salto y \texttt{||} denota concatenación de código.
+
+\begin{algorithm}[H]
+\caption{Esquema de Traducción para Repeat-Until}
+\textbf{TraductionScheme}($S$) = \textbf{case} $S$ \textbf{of} \\
+\quad \dots \\
+\quad \texttt{repeat } $S_1$ \texttt{ until } $C$: \\
+\qquad \texttt{Label } $L$ = \text{newlabel}(); \\
+\qquad $S$.code = \text{emit}(\text{LABEL } $L$) \ || \ $S_1$.code \ || \ $C$.code \ || \ \text{emit}(\texttt{ifFalse } $C$.addr \texttt{ goto } $L$); \\
+\end{algorithm}
+
+
+\textit{Nota: La lógica es ``Repetir mientras la condición sea Falsa''. Si $C$ se vuelve Verdadera, el flujo continúa ("cae") y termina el ciclo.}
+
+\subsection*{2. Traducción del Código}
+
+Aplicando el esquema anterior y las reglas estándar aritméticas al código fuente:
+
+\begin{verbatim}
+x = 0;
+repeat
+    y = 2*x + 1;
+    x = x + y;
+until x = 100;
+\end{verbatim}
+
+Obtenemos el siguiente Código de Tres Direcciones, utilizando temporales ($t_n$) para los cálculos intermedios:
+
+\begin{center}
+\begin{tabular}{r l l}
+    \toprule
+    \textbf{Línea} & \textbf{Instrucción } & \textbf{Comentario} \\
+    \midrule
+    (1) & $x = 0$ & Inicialización \\
+    (2) & \textbf{L1:} & Etiqueta de inicio del ciclo ($repeat$) \\
+    \midrule
+    & \textit{-- Cuerpo del ciclo --} & \\
+    (3) & $t_1 = 2 * x$ & Subexpresión $2x$ \\
+    (4) & $t_2 = t_1 + 1$ & Subexpresión $+1$ \\
+    (5) & $y = t_2$ & Asignación a $y$ \\
+    (6) & $t_3 = x + y$ & Suma $x+y$ \\
+    (7) & $x = t_3$ & Actualización de $x$ \\
+    \midrule
+    & \textit{-- Evaluación de Condición --} & \\
+    (8) & $t_4 = x == 100$ & Evaluar condición relacional \\
+    (9) & \texttt{ifFalse} $t_4$ \texttt{ goto} \textbf{L1} & Si NO es 100, repetir. \\
+    \bottomrule
+\end{tabular}
+
+\end{center}
+
+
+
+Aunque la lista anterior representa el Código de Tres Direcciones de forma lineal, a continuación se detalla su implementación en estructuras de Cuádruples.
+
+
+En los cuádruples, las etiquetas (como \texttt{L1}) suelen manejarse colocando la etiqueta en el campo \texttt{Resultado} de una instrucción especial \texttt{LABEL}, o usando la etiqueta como destino en los saltos.
+
+\begin{center}
+\begin{tabular}{|c|c|c|c|c|}
+    \hline
+    \textbf{Ref} & \textbf{Op} & \textbf{Arg1} & \textbf{Arg2} & \textbf{Resultado} \\
+    \hline
+    (0) & $=$ & $0$ & - & $x$ \\
+    \hline
+    (1) & \texttt{LABEL} & - & - & \texttt{L1} \\
+    \hline
+    (2) & $*$ & $2$ & $x$ & $t_1$ \\
+    \hline
+    (3) & $+$ & $t_1$ & $1$ & $t_2$ \\
+    \hline
+    (4) & $=$ & $t_2$ & - & $y$ \\
+    \hline
+    (5) & $+$ & $x$ & $y$ & $t_3$ \\
+    \hline
+    (6) & $=$ & $t_3$ & - & $x$ \\
+    \hline
+    (7) & $==$ & $x$ & $100$ & $t_4$ \\
+    \hline
+    (8) & \texttt{ifFalse} & $t_4$ & - & \texttt{L1} \\
+    \hline
+\end{tabular}
+\end{center}
+
