@@ -19,13 +19,13 @@ El orden de evaluación es que primero se debe calcular la subexpresión dentro 
 En los cuádruples utilizamos variables temporales explícitas ($t_1, t_2$) para almacenar los resultados intermedios.
 
 \begin{center}
-\begin{tabular}{|c|c|c|c|c|}
+\begin{tabular}{|c|c|c|c|}
     \hline
-    \textbf{Instrucción} & \textbf{Op} & \textbf{Arg1} & \textbf{Arg2} & \textbf{Resultado} \\
+    \textbf{Op} & \textbf{Arg1} & \textbf{Arg2} & \textbf{Resultado} \\
     \hline
-    (1) & $+$ & $b$ & $c$ & $t_1$ \\
+     $+$ & $b$ & $c$ & $t_1$ \\
     \hline
-    (2) & $+$ & $a$ & $t_1$ & $t_2$ \\
+     $+$ & $a$ & $t_1$ & $t_2$ \\
     \hline
 \end{tabular}
 \end{center}
@@ -74,5 +74,356 @@ Se utilizan dos tablas. La tabla de instrucciones contiene apuntadores a la tabl
     \hline
 \end{tabular}
 \end{center}
-\end{enumerate}    
 
+
+
+
+\item[(b)] $-(a+b)*(c+d)$
+
+El orden de evaluación sigue la jerarquía de operadores: primero paréntesis, luego operadores unarios, y al final la multiplicación.
+
+\subsection*{1. Cuádruples}
+
+\begin{center}
+\begin{tabular}{|c|c|c|c|}
+    \hline
+    \textbf{Op} & \textbf{Arg1} & \textbf{Arg2} & \textbf{Resultado} \\
+    \hline
+    $+$ & $a$ & $b$ & $t_1$ \\
+    \hline
+    \texttt{minus} & $t_1$ & - & $t_2$ \\
+    \hline
+    $+$ & $c$ & $d$ & $t_3$ \\
+    \hline
+    $*$ & $t_2$ & $t_3$ & $t_4$ \\
+    \hline
+\end{tabular}
+\end{center}
+
+\subsection*{2. Triples}
+
+
+\begin{center}
+\begin{tabular}{|c|c|c|c|}
+    \hline
+    \textbf{Índice} & \textbf{Op} & \textbf{Arg1} & \textbf{Arg2} \\
+    \hline
+    (0) & $+$ & $a$ & $b$ \\
+    \hline
+    (1) & \texttt{minus} & (0) & - \\
+    \hline
+    (2) & $+$ & $c$ & $d$ \\
+    \hline
+    (3) & $*$ & (1) & (2) \\
+    \hline
+\end{tabular}
+\end{center}
+
+\subsection*{3. Triples Indirectos}
+
+
+\textbf{Tabla de Instrucciones}
+\begin{center}
+\begin{tabular}{|c|}
+    \hline
+    \textbf{Apunta a Triple} \\
+    \hline
+    (0) \\
+    \hline
+    (1) \\
+    \hline
+    (2) \\
+    \hline
+    (3) \\
+    \hline
+\end{tabular}
+\end{center}
+
+\textbf{Tabla de Triples}
+\begin{center}
+\begin{tabular}{|c|c|c|c|}
+    \hline
+    \textbf{ID} & \textbf{Op} & \textbf{Arg1} & \textbf{Arg2} \\
+    \hline
+    0 & $+$ & $a$ & $b$ \\
+    \hline
+    1 & \texttt{minus} & (0) & - \\
+    \hline
+    2 & $+$ & $c$ & $d$ \\
+    \hline
+    3 & $*$ & (1) & (2) \\
+    \hline
+\end{tabular}
+\end{center}
+
+
+\item[(c)] $a[i] = b*c - d*c$
+
+La operación $a[i]$ indica un acceso a la posición $i$ del arreglo $a$. Dado que está a la izquierda de la asignación, es una operación de escritura (almacenamiento).
+
+\subsection*{1. Cuádruples}
+Generamos temporales para las multiplicaciones y la resta. Para la asignación al arreglo, utilizamos el operador especial \texttt{[]=} donde \texttt{Arg1} es el arreglo, \texttt{Arg2} es el índice y \texttt{Resultado} es el valor a guardar.
+\begin{center}
+\begin{tabular}{|c|c|c|c|}
+    \hline
+    \textbf{Op} & \textbf{Arg1} & \textbf{Arg2} & \textbf{Resultado} \\
+    \hline
+    $*$ & $b$ & $c$ & $t_1$ \\
+    \hline
+    $*$ & $d$ & $c$ & $t_2$ \\
+    \hline
+    $-$ & $t_1$ & $t_2$ & $t_3$ \\
+    \hline
+    \texttt{[]=} & $a$ & $i$ & $t_3$ \\
+    \hline
+\end{tabular}
+\end{center}
+
+\subsection*{2. Triples}
+Como los triples solo tienen dos argumentos (\texttt{Arg1}, \texttt{Arg2}), no podemos expresar la asignación de arreglo en una sola línea ($a$, $i$, $val$). Lo descomponemos en dos pasos lógicos:
+1. Calcular la referencia a $a[i]$ (operador \texttt{[]}).
+2. Asignar el valor a esa referencia (operador \texttt{assign} o \texttt{=}).
+
+\begin{center}
+\begin{tabular}{|c|c|c|c|}
+    \hline
+    \textbf{Índice} & \textbf{Op} & \textbf{Arg1} & \textbf{Arg2} \\
+    \hline
+    (0) & $*$ & $b$ & $c$ \\
+    \hline
+    (1) & $*$ & $d$ & $c$ \\
+    \hline
+    (2) & $-$ & (0) & (1) \\
+    \hline
+    (3) & \texttt{[]} & $a$ & $i$ \\
+    \hline
+    (4) & \texttt{assign} & (3) & (2) \\
+    \hline
+\end{tabular}
+\end{center}
+\textit{Nota: En la instrucción (3) obtenemos la dirección de $a[i]$ y en la (4) guardamos el resultado de la resta (2) en esa dirección.}
+
+\subsection*{3. Triples Indirectos}
+
+\textbf{Tabla de Instrucciones}
+\begin{center}
+\begin{tabular}{|c|}
+    \hline
+    \textbf{Apunta a Triple} \\
+    \hline
+    (0) \\
+    \hline
+    (1) \\
+    \hline
+    (2) \\
+    \hline
+    (3) \\
+    \hline
+    (4) \\
+    \hline
+\end{tabular}
+\end{center}
+
+\textbf{Tabla de Triples}
+\begin{center}
+\begin{tabular}{|c|c|c|c|}
+    \hline
+    \textbf{ID} & \textbf{Op} & \textbf{Arg1} & \textbf{Arg2} \\
+    \hline
+    0 & $*$ & $b$ & $c$ \\
+    \hline
+    1 & $*$ & $d$ & $c$ \\
+    \hline
+    2 & $-$ & (0) & (1) \\
+    \hline
+    3 & \texttt{[]} & $a$ & $i$ \\
+    \hline
+    4 & \texttt{assign} & (3) & (2) \\
+    \hline
+\end{tabular}
+\end{center}
+
+
+
+
+\item[(d)] $x = a[i] + b[j]$
+
+
+\subsection*{1. Cuádruples}
+
+
+\begin{center}
+\begin{tabular}{|c|c|c|c|}
+    \hline
+    \textbf{Op} & \textbf{Arg1} & \textbf{Arg2} & \textbf{Resultado} \\
+    \hline
+    \texttt{=[]} & $a$ & $i$ & $t_1$ \\
+    \hline
+    \texttt{=[]} & $b$ & $j$ & $t_2$ \\
+    \hline
+    $+$ & $t_1$ & $t_2$ & $t_3$ \\
+    \hline
+    $=$ & $t_3$ & - & $x$ \\
+    \hline
+\end{tabular}
+\end{center}
+\textit{Nota: La última instrucción asigna el valor del temporal $t_3$ a la variable $x$.}
+
+\subsection*{2. Triples}
+En la notación de triples, el operador \texttt{=[]} devuelve el valor almacenado en esa posición.
+
+\begin{center}
+\begin{tabular}{|c|c|c|c|}
+    \hline
+    \textbf{Índice} & \textbf{Op} & \textbf{Arg1} & \textbf{Arg2} \\
+    \hline
+    (0) & \texttt{=[]} & $a$ & $i$ \\
+    \hline
+    (1) & \texttt{=[]} & $b$ & $j$ \\
+    \hline
+    (2) & $+$ & (0) & (1) \\
+    \hline
+    (3) & \texttt{assign} & $x$ & (2) \\
+    \hline
+\end{tabular}
+\end{center}
+
+\subsection*{3. Triples Indirectos}
+
+\textbf{Tabla de Instrucciones}
+\begin{center}
+\begin{tabular}{|c|}
+    \hline
+    \textbf{Apunta a Triple} \\
+    \hline
+    (0) \\
+    \hline
+    (1) \\
+    \hline
+    (2) \\
+    \hline
+    (3) \\
+    \hline
+\end{tabular}
+\end{center}
+
+\textbf{Tabla de Triples}
+\begin{center}
+\begin{tabular}{|c|c|c|c|}
+    \hline
+    \textbf{ID} & \textbf{Op} & \textbf{Arg1} & \textbf{Arg2} \\
+    \hline
+    0 & \texttt{=[]} & $a$ & $i$ \\
+    \hline
+    1 & \texttt{=[]} & $b$ & $j$ \\
+    \hline
+    2 & $+$ & (0) & (1) \\
+    \hline
+    3 & \texttt{assign} & $x$ & (2) \\
+    \hline
+\end{tabular}
+\end{center}
+
+
+
+
+\item[(e)] $x = f(x+1, y) + 2$
+\begin{enumerate}
+    \item Calcular el argumento $x+1$.
+    \item Pasar los parámetros ($t_1$ y $y$) a la función.
+    \item Llamar a la función $f$.
+    \item Sumar 2 al resultado de la función.
+    \item Asignar el total a $x$.
+\end{enumerate}
+
+\subsection*{1. Cuádruples}
+Utilizamos la instrucción \texttt{param} para preparar los argumentos. La instrucción \texttt{call} suele tener la estructura: \texttt{call nombre\_función, num\_args, variable\_retorno}.
+
+\begin{center}
+\begin{tabular}{|c|c|c|c|}
+    \hline
+    \textbf{Op} & \textbf{Arg1} & \textbf{Arg2} & \textbf{Resultado} \\
+    \hline
+    $+$ & $x$ & $1$ & $t_1$ \\
+    \hline
+    \texttt{param} & $t_1$ & - & - \\
+    \hline
+    \texttt{param} & $y$ & - & - \\
+    \hline
+    \texttt{call} & $f$ & $2$ & $t_2$ \\
+    \hline
+    $+$ & $t_2$ & $2$ & $t_3$ \\
+    \hline
+    $=$ & $t_3$ & - & $x$ \\
+    \hline
+\end{tabular}
+\end{center}
+
+\subsection*{2. Triples}
+En los triples, la instrucción \texttt{call} devuelve implícitamente un valor que puede ser referenciado por su índice (en este caso, el índice (3)).
+
+\begin{center}
+\begin{tabular}{|c|c|c|c|}
+    \hline
+    \textbf{Índice} & \textbf{Op} & \textbf{Arg1} & \textbf{Arg2} \\
+    \hline
+    (0) & $+$ & $x$ & $1$ \\
+    \hline
+    (1) & \texttt{param} & (0) & - \\
+    \hline
+    (2) & \texttt{param} & $y$ & - \\
+    \hline
+    (3) & \texttt{call} & $f$ & $2$ \\
+    \hline
+    (4) & $+$ & (3) & $2$ \\
+    \hline
+    (5) & \texttt{assign} & $x$ & (4) \\
+    \hline
+\end{tabular}
+\end{center}
+
+\subsection*{3. Triples Indirectos}
+
+\textbf{Tabla de Instrucciones}
+\begin{center}
+\begin{tabular}{|c|}
+    \hline
+    \textbf{Apunta a Triple} \\
+    \hline
+    (0) \\
+    \hline
+    (1) \\
+    \hline
+    (2) \\
+    \hline
+    (3) \\
+    \hline
+    (4) \\
+    \hline
+    (5) \\
+    \hline
+\end{tabular}
+\end{center}
+
+\textbf{Tabla de Triples}
+\begin{center}
+\begin{tabular}{|c|c|c|c|}
+    \hline
+    \textbf{ID} & \textbf{Op} & \textbf{Arg1} & \textbf{Arg2} \\
+    \hline
+    0 & $+$ & $x$ & $1$ \\
+    \hline
+    1 & \texttt{param} & (0) & - \\
+    \hline
+    2 & \texttt{param} & $y$ & - \\
+    \hline
+    3 & \texttt{call} & $f$ & $2$ \\
+    \hline
+    4 & $+$ & (3) & $2$ \\
+    \hline
+    5 & \texttt{assign} & $x$ & (4) \\
+    \hline
+\end{tabular}
+\end{center}
+
+\end{enumerate}    
