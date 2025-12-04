@@ -145,7 +145,7 @@ Utilizamos temporales ($t_n$) para los cálculos. Las etiquetas $L1$ y $L2$ marc
 
 \textbf{Definición de la Función de Ambiente $\Gamma$}
 
-La función de ambiente (o contexto de tipos) $\Gamma$ asocia cada variable con su tipo. Basándonos en las declaraciones explícitas (\texttt{int a, b, x}) y el uso implícito de las variables $r$ y $z$ (que reciben valores enteros), definimos:
+Basándonos en las declaraciones explícitas (\texttt{int a, b, x}) y el uso implícito de las variables $r$ y $z$ (que reciben valores enteros), definimos:
 
 \[
 \Gamma = \{ 
@@ -163,13 +163,12 @@ La función de ambiente (o contexto de tipos) $\Gamma$ asocia cada variable con 
 Primero, establecemos las reglas de inferencia para sentencias y expresiones aritméticas que usaremos:
 
 \begin{center}
-\small
-\textbf{(Assign)} $\frac{\Gamma \vdash x : \tau \quad \Gamma \vdash E : \tau}{\Gamma \vdash x = E : \texttt{ok}}$ \quad
-\textbf{(Seq)} $\frac{\Gamma \vdash S_1 : \texttt{ok} \quad \Gamma \vdash S_2 : \texttt{ok}}{\Gamma \vdash S_1 ; S_2 : \texttt{ok}}$ \quad
-\textbf{(While)} $\frac{\Gamma \vdash C : \texttt{bool} \quad \Gamma \vdash S : \texttt{ok}}{\Gamma \vdash \texttt{while } C \texttt{ do } S : \texttt{ok}}$
+\textbf{(Assign)} $$\frac{\Gamma \vdash x : \tau \quad \Gamma \vdash E : \tau}{\Gamma \vdash x = E : \texttt{ok}}$$ \\
+\textbf{(Seq)} $$\frac{\Gamma \vdash S_1 : \texttt{ok} \quad \Gamma \vdash S_2 : \texttt{ok}}{\Gamma \vdash S_1 ; S_2 : \texttt{ok}}$$ \\
+\textbf{(While)} $$\frac{\Gamma \vdash C : \texttt{bool} \quad \Gamma \vdash S : \texttt{ok}}{\Gamma \vdash \texttt{while } C \texttt{ do } S : \texttt{ok}}$$
 \end{center}
 
-Dividimos la demostración en partes lógicas:
+Dividimos la demostración en:
 
 \textbf{Parte 1: Declaraciones e Inicialización ($D_{init}$)}
 Verificamos las primeras 4 líneas. Como $10, 2, 0$ son \texttt{int} y $a,b,x$ son \texttt{int} en $\Gamma$, las asignaciones son válidas.
