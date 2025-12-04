@@ -23,3 +23,208 @@ Realiza:
     
 \end{Pro}
 
+
+Agregamos la producción para el ciclo while. A diferencia del repeat (donde primero se ejecuta el cuerpo), en el while primero se evalúa la condición.\begin{center}\renewcommand{\arraystretch}{1.3}\begin{tabular}{l @{\hspace{1cm}} l}\toprule\textbf{Producción} & \textbf{Reglas Semánticas (AST)} \\ \midrule$S \to \texttt{while } C \texttt{ do } S_1$ & $S.node = \text{new Node}(\texttt{'while'}, C.node, S_1.node)$ \\ \bottomrule\end{tabular}\end{center}
+
+Las declaraciones int se representan como assign ya que el efecto en tiempo de ejecución es guardar el valor en la variable.
+
+\begin{figure*}[h]
+    \centering
+    \includegraphics[width=\textwidth]{images/p7asa.jpg}
+    \caption{AST para el código fuente dado.}
+    \label{fig:p7_asa}
+\end{figure*}
+
+
+\textbf{Código en Tres Direcciones (TAC)}
+
+Utilizamos temporales ($t_n$) para los cálculos. Las etiquetas $L1$ y $L2$ marcan el inicio del ciclo y la salida del mismo, respectivamente.
+
+\begin{center}
+\begin{tabular}{r l l}
+    \toprule
+    \textbf{Línea} & \textbf{Instrucción} & \textbf{Comentario} \\
+    \midrule
+    (1) & $a = 10$ & Inicialización \\
+    (2) & $b = 2$ & \\
+    (3) & $x = 0$ & \\
+    (4) & $r = a$ & \\
+    \midrule
+    (5) & \textbf{L1:} & \textit{Etiqueta de inicio (evaluación)} \\
+    (6) & $t_1 = r \ge b$ & Evaluar condición \\
+    (7) & \texttt{ifFalse} $t_1$ \texttt{goto} \textbf{L2} & Si es falso, salir del ciclo \\
+    \midrule
+    (8) & $t_2 = x + 1$ & Inicio del cuerpo \\
+    (9) & $x = t_2$ & \\
+    (10) & $t_3 = r - b$ & \\
+    (11) & $r = t_3$ & \\
+    (12) & \texttt{goto} \textbf{L1} & Regresar a evaluar \\
+    \midrule
+    (13) & \textbf{L2:} & \textit{Etiqueta de salida} \\
+    (14) & $z = x$ & Asignación final \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+ \textbf{Triples Indirectos}
+
+ 
+\begin{itemize}
+    \item Los saltos (\texttt{goto} y \texttt{ifFalse}) en la tabla de triples apuntan a la posición en la lista de instrucciones (columna izquierda de la primera tabla), no al ID del triple.
+    \item El ciclo comienza en la instrucción [4] y termina saltando a la instrucción [11].
+\end{itemize}
+
+\textbf{1. Lista de Instrucciones (Ejecución)}
+\begin{center}
+\begin{tabular}{|c|c|}
+    \hline
+    \textbf{Posición} & \textbf{Apunta a Triple} \\
+    \hline
+    $[0]$ & (0) \\
+    \hline
+    $[1]$ & (1) \\
+    \hline
+    $[2]$ & (2) \\
+    \hline
+    $[3]$ & (3) \\
+    \hline
+    $[4]$ & (4) $\leftarrow$ \textit{Inicio While} \\
+    \hline
+    $[5]$ & (5) \\
+    \hline
+    $[6]$ & (6) \\
+    \hline
+    $[7]$ & (7) \\
+    \hline
+    $[8]$ & (8) \\
+    \hline
+    $[9]$ & (9) \\
+    \hline
+    $[10]$ & (10) \\
+    \hline
+    $[11]$ & (11) $\leftarrow$ \textit{Salida While} \\
+    \hline
+\end{tabular}
+\end{center}
+
+\textbf{2. Tabla de Triples}
+\begin{center}
+\begin{tabular}{|c|c|c|c|}
+    \hline
+    \textbf{ID} & \textbf{Op} & \textbf{Arg1} & \textbf{Arg2} \\
+    \hline
+    (0) & \texttt{assign} & $a$ & $10$ \\
+    \hline
+    (1) & \texttt{assign} & $b$ & $2$ \\
+    \hline
+    (2) & \texttt{assign} & $x$ & $0$ \\
+    \hline
+    (3) & \texttt{assign} & $r$ & $a$ \\
+    \hline
+    (4) & $\ge$ & $r$ & $b$ \\
+    \hline
+    (5) & \texttt{ifFalse} & (4) & $[11]$ \\
+    \hline
+    (6) & $+$ & $x$ & $1$ \\
+    \hline
+    (7) & \texttt{assign} & $x$ & (6) \\
+    \hline
+    (8) & $-$ & $r$ & $b$ \\
+    \hline
+    (9) & \texttt{assign} & $r$ & (8) \\
+    \hline
+    (10) & \texttt{goto} & $[4]$ & - \\
+    \hline
+    (11) & \texttt{assign} & $z$ & $x$ \\
+    \hline
+\end{tabular}
+\end{center}
+
+
+%% TIPOS
+
+\textbf{Definición de la Función de Ambiente $\Gamma$}
+
+La función de ambiente (o contexto de tipos) $\Gamma$ asocia cada variable con su tipo. Basándonos en las declaraciones explícitas (\texttt{int a, b, x}) y el uso implícito de las variables $r$ y $z$ (que reciben valores enteros), definimos:
+
+\[
+\Gamma = \{ 
+    a : \texttt{int}, \quad 
+    b : \texttt{int}, \quad 
+    x : \texttt{int}, \quad 
+    r : \texttt{int}, \quad 
+    z : \texttt{int} 
+\}
+\]
+\textit{Nota: Asumimos que $r$ y $z$ están definidos en el alcance global o superior como enteros.}
+
+\textbf{Verificación con Reglas de Inferencia}
+
+Primero, establecemos las reglas de inferencia para sentencias y expresiones aritméticas que usaremos:
+
+\begin{center}
+\small
+\textbf{(Assign)} $\frac{\Gamma \vdash x : \tau \quad \Gamma \vdash E : \tau}{\Gamma \vdash x = E : \texttt{ok}}$ \quad
+\textbf{(Seq)} $\frac{\Gamma \vdash S_1 : \texttt{ok} \quad \Gamma \vdash S_2 : \texttt{ok}}{\Gamma \vdash S_1 ; S_2 : \texttt{ok}}$ \quad
+\textbf{(While)} $\frac{\Gamma \vdash C : \texttt{bool} \quad \Gamma \vdash S : \texttt{ok}}{\Gamma \vdash \texttt{while } C \texttt{ do } S : \texttt{ok}}$
+\end{center}
+
+Dividimos la demostración en partes lógicas:
+
+\textbf{Parte 1: Declaraciones e Inicialización ($D_{init}$)}
+Verificamos las primeras 4 líneas. Como $10, 2, 0$ son \texttt{int} y $a,b,x$ son \texttt{int} en $\Gamma$, las asignaciones son válidas.
+
+\[
+D_{init}: \frac{\Gamma \vdash a:\texttt{int} \quad \Gamma \vdash 10:\texttt{int}}{\Gamma \vdash a=10 : \texttt{ok}} \dots (\text{análogo para } b, x, r)
+\]
+
+\textbf{Parte 2: Condición del Ciclo ($D_{cond}$)}
+Verificamos $r \ge b$.
+
+\[
+D_{cond}: \frac{\Gamma \vdash r : \texttt{int} \quad \Gamma \vdash b : \texttt{int}}{\Gamma \vdash r \ge b : \texttt{bool}}
+\]
+
+\textbf{Parte 3: Cuerpo del Ciclo ($D_{body}$)}
+Verificamos el bloque $\{ x = x + 1; \ r = r - b; \}$.
+
+\begin{center}
+\scalebox{0.9}{
+$
+D_{body}: 
+\frac{
+    \displaystyle
+    \frac{
+        \Gamma \vdash x:\texttt{int} \quad \frac{\Gamma \vdash x:\texttt{int} \quad \Gamma \vdash 1:\texttt{int}}{\Gamma \vdash x+1 : \texttt{int}}
+    }{\Gamma \vdash x = x + 1 : \texttt{ok}}
+    \quad
+    \frac{
+        \Gamma \vdash r:\texttt{int} \quad \frac{\Gamma \vdash r:\texttt{int} \quad \Gamma \vdash b:\texttt{int}}{\Gamma \vdash r-b : \texttt{int}}
+    }{\Gamma \vdash r = r - b : \texttt{ok}}
+}{
+    \Gamma \vdash \{ x=x+1; \ r=r-b \} : \texttt{ok} \quad (\text{Regla Seq})
+}
+$
+}
+\end{center}
+
+\textbf{Parte 4: Estructura While ($D_{while}$)}
+Unimos la condición ($D_{cond}$) y el cuerpo ($D_{body}$).
+
+\[
+D_{while}: \frac{D_{cond} \quad D_{body}}{\Gamma \vdash \texttt{while}(r \ge b) \texttt{ do } \{ \dots \} : \texttt{ok}}
+\]
+
+\textbf{Parte 5: Asignación Final ($D_{final}$)}
+Verificamos $z = x$.
+\[
+D_{final}: \frac{\Gamma \vdash z : \texttt{int} \quad \Gamma \vdash x : \texttt{int}}{\Gamma \vdash z = x : \texttt{ok}}
+\]
+
+\textbf{Conclusión General:}
+Al unir todas las partes mediante la regla de secuencia (\textbf{Seq}), demostramos que todo el programa está correctamente tipado:
+
+\[
+\frac{D_{init} \quad D_{while} \quad D_{final}}{\Gamma \vdash \text{Programa} : \texttt{ok}}
+\]
+
